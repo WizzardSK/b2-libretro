@@ -15,7 +15,7 @@ jobs:
             apt-get install -qy software-properties-common &&
             add-apt-repository -y ppa:ubuntu-toolchain-r/test &&
             apt-get update -qy &&
-            apt-get install -qy build-essential g++-9 &&
+            apt-get install -qy build-essential g++-9 uuid-dev &&
             make -C src/libretro -f Makefile CC=gcc-9 CXX=g++-9 -j4 &&
             ls -l src/libretro/b2_libretro.so &&
             file src/libretro/b2_libretro.so &&
