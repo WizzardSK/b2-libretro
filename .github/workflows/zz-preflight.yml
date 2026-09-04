@@ -1,0 +1,31 @@
+name: buildbot preflight (32-bit x86)
+on: [push, workflow_dispatch]
+
+jobs:
+  linux-i686:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build in i386 xenial with gcc-9, like the buildbot image
+        run: |
+          docker run --rm --platform linux/386 -e ARCH=x86 -v "$PWD":/src -w /src i386/ubuntu:xenial sh -c '
+            apt-get update -qy &&
+            apt-get install -qy software-properties-common &&
+            add-apt-repository -y ppa:ubuntu-toolchain-r/test &&
+            apt-get update -qy &&
+            apt-get install -qy build-essential g++-9 &&
+            make -C src/libretro -f Makefile CC=gcc-9 CXX=g++-9 -j4 &&
+            ls -l src/libretro/b2_libretro.so &&
+            file src/libretro/b2_libretro.so &&
+            nm -D --defined-only src/libretro/b2_libretro.so | grep " T retro_run"'
+
+  android-x86:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - run: cd jni && $ANDROID_NDK_LATEST_HOME/ndk-build APP_ABI=x86 -j4
+      - run: find obj -name "*.so" -exec file {} \;
